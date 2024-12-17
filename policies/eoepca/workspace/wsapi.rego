@@ -15,7 +15,7 @@ package eoepca.workspace.wsapi
 
 import rego.v1
 import input.request
-import eoepca.iam.util.verified_claims
+import data.eoepca.iam.util.verified_claims
 
 default allow = false
 
