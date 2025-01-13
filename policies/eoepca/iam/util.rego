@@ -28,7 +28,7 @@ jwks := jwks_request("http://iam-keycloak/realms/eoepca/protocol/openid-connect/
 # This rule is only useful for policies that accept the APISIX OPA input format.
 default verified_claims = null
 verified_claims := claims if {
-    [type, token] := split(input.request.headers.Authorization, " ")
+    [type, token] := split(input.request.headers.authorization, " ")
     type == "Bearer"
     io.jwt.verify_rs256(token, jwks) == true
     claims := io.jwt.decode(token)[1]
