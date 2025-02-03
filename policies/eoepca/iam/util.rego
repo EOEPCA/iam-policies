@@ -29,7 +29,7 @@ jwks := jwks_request("http://iam-keycloak/realms/eoepca/protocol/openid-connect/
 default verified_claims = null
 verified_claims := claims if {
     print("[verified_claims] request: ", input.request)
-    [type, token] := split(input.request.headers.authorization, " ")
+    [type, token] := split(input.request.headers.Authorization, " ")
     type == "Bearer"
     io.jwt.verify_rs256(token, jwks) == true
     claims := io.jwt.decode(token)[1]
