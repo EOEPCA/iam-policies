@@ -7,6 +7,7 @@ import data.eoepca.iam.util.verified_claims
 default allow = false
 
 allow if {
+    print("[wsui policy] START")
     claims := verified_claims
     claims != null
 
