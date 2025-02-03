@@ -1,4 +1,4 @@
-package eoepca.workspace.wsapi
+package eoepca.workspace.wsui
 
 import rego.v1
 import input.request
