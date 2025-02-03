@@ -8,7 +8,7 @@ default allow = false
 
 allow if {
     print("[wsui policy] START")
-    print("[wsui policy] Host: ", request.host)´
+    print("[wsui policy] Host: ", request.host)
     host_parts := split(request.host, ".")
     wsName := host_parts[0]
     claims := verified_claims
