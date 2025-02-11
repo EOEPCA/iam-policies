@@ -8,9 +8,9 @@ default allow = false
 
 allow if {
     print("[eoapi policy] START1")
-    request.method == "GET",
+    request.method == "GET"
     path_contains(request.path, "/stac/collections/")
-    not path_contains(request.path, "123") 
+    not path_contains(request.path, "123")
 }
 
 path_contains(path, substring) {
