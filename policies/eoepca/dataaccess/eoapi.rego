@@ -9,8 +9,8 @@ default allow = false
 allow if {
     print("[eoapi policy] START1")
     request.method == "GET"
-    count([x | x = "/stac/collections/"; x in request.path]) > 0
-    not count([x | x = "123"; x in request.path]) > 0  # for testing check if path does not contain "123"
+    startswith(request.path, "/stac/collections/")
+    not contains(request.path, "123") # for testing
 }
 
 allow if {
