@@ -13,14 +13,14 @@ allow if {
     not path_contains(request.path, "123")
 }
 
-path_contains(path, substring) {
-    count([x | x = substring; x in path]) > 0
-}
-
 allow if {
     print("[eoapi policy] START2")
     claims := verified_claims
     print("[eoapi policy] Claims: ", claims)
     claims != null
     "stac_editor" in claims.resource_access[eoapi].roles
+}
+
+path_contains(path, substring) {
+    count([x | x = substring; x in path]) > 0
 }
