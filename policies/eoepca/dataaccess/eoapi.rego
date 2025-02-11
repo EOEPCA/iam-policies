@@ -9,8 +9,8 @@ default allow = false
 allow if {
     print("[eoapi policy] START1")
     request.method == "GET"
-    path_contains(request.path, "/stac/collections/")
-    not path_contains(request.path, "123")
+    count([x | x = "/stac/collections/"; x in request.path]) > 0
+    not count([x | x = "123"; x in request.path]) > 0  # for testing check if path does not contain "123"
 }
 
 allow if {
@@ -18,9 +18,5 @@ allow if {
     claims := verified_claims
     print("[eoapi policy] Claims: ", claims)
     claims != null
-    "stac_editor" in claims.resource_access[eoapi].roles
-}
-
-path_contains(path, substring) {
-    count([x | x = substring; x in path]) > 0
+    "stac_editor" in claims.resource_access[eoepca].roles
 }
