@@ -1,4 +1,4 @@
-package eoepca.resourceresgitration.registrationapi
+package eoepca.resourceregistration.registrationapi
 
 import rego.v1
 import input.request
