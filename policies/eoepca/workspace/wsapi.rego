@@ -22,10 +22,20 @@ default allow = false
 allow if {
     claims := verified_claims
     claims != null
+    claims.resource_access != null
+    claims.resource_access["workspace-api"] != null
+    "admin" in claims.resource_access["workspace-api"].roles
+}
+
+allow if {
+    claims := verified_claims
+    claims != null
+    claims.resource_access != null
     path := split(request.path, "/")
     "" == path[0]
     "workspaces" == path[1]
-    wsName := path[2]
+    wsName := path[2]    
+    claims.resource_access[wsName] != null
     "ws_access" in claims.resource_access[wsName].roles
 #    print("[wsapi policy] Path: ", request.path, " -> ", path)
 #    print("[wsapi policy] Method: ", request.method)
