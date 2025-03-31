@@ -31,7 +31,7 @@ verified_claims := claims if {
     print("[verified_claims] request: ", input.request)
     some authKey in ["Authorization", "authorization"]
     [type, token] := split(input.request.headers[authKey], " ")
-    type == "Bearer"
+    type in ["Bearer", "bearer"]
     io.jwt.verify_rs256(token, jwks) == true
     claims := io.jwt.decode(token)[1]
 }
