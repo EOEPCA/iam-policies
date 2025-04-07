@@ -27,6 +27,16 @@ allow if {
 
 allow if {
     print("[wsui policy] START3")
+    print("[wsui policy] Path: ", request.path)
+    path := split(request.path, "/")
+    count(path) > 2
+    "" == path[0]
+    "api" == path[1]
+    "login" == path[2]
+}
+
+allow if {
+    print("[wsui policy] START4")
     print("[wsui policy] Host: ", request.host)
     host_parts := split(request.host, ".")
     wsName := host_parts[0]
