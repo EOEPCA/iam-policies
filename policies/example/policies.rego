@@ -32,5 +32,5 @@ email_verified if {
 default privileged_user = false
 
 privileged_user if {
-    data.src.test.rego.example.privileged_users[_] = input.identity.attributes.preferred_username[_]
+    data.policies.example.privileged_users[_] = input.identity.attributes.preferred_username[_]
 }
