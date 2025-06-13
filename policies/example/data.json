@@ -1,6 +1,7 @@
 {
   "data_loaded": "true",
   "privileged_users": [
+    "eoepcauser",
     "alice", "bob", "fred", "henry", "maude", "user",
     "w-jfe", "w-mwo","w-scho"
   ]
