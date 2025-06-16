@@ -22,4 +22,5 @@ default allow = false
 allow if {
     claims := verified_claims
     claims != null
+    "eoepcauser" == claims.preferred_username
 }
