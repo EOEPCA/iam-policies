@@ -22,5 +22,5 @@ default allow = false
 allow if {
     claims := verified_claims
     claims != null
-    "eoepcauser" == claims.preferred_username
+    claims.preferred_username == data.policies.example.privileged_users[_]
 }
