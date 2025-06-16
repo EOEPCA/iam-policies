@@ -11,7 +11,7 @@
 
 # Simple example OPA policy rules
 
-package tutorial.allow_all
+package example.tutorial.allow_all
 
 import rego.v1
 
