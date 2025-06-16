@@ -16,3 +16,5 @@ package example.tutorial.allow_all
 import rego.v1
 
 default allow = true
+
+allow = true
