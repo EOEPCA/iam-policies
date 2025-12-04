@@ -11,5 +11,15 @@ allow if {
     claims := verified_claims
     print("[registrationapi policy] Claims: ", claims)
     claims != null
-    claims.resource_access != null
+
+    rr := object.get(claims.resource_access, "resource_registration", null)
+    rc := object.get(claims.resource_access, "resource-catalogue", null)
+
+    roles := concat(
+        object.get(rr, "roles", []),
+        object.get(rc, "roles", []),
+    )
+    print("[registrationapi policy] Roles: ", roles)
+
+    "records_editor" in roles
 }
