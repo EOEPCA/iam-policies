@@ -19,6 +19,7 @@ allow if {
         object.get(rr, "roles", []),
         object.get(rc, "roles", []),
     )
+    print("[registrationapi policy] Roles: ", roles)
 
     "records_editor" in roles
 }
