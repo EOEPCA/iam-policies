@@ -15,7 +15,10 @@ allow if {
     rr := object.get(claims.resource_access, "resource_registration", null)
     rc := object.get(claims.resource_access, "resource-catalogue", null)
 
-    roles := object.get(rr, "roles", []) ++ object.get(rc, "roles", [])
+    roles := concat(
+        object.get(rr, "roles", []),
+        object.get(rc, "roles", []),
+    )
 
     "records_editor" in roles
 }
