@@ -19,25 +19,52 @@ import data.eoepca.iam.util.verified_claims
 
 default allow = false
 
-allow if {
-    claims := verified_claims
+claims := verified_claims
+
+workspace_name := wsName if {
+    path := split(request.path, "/")
+    count(path) > 2
+    "" == path[0]
+    "workspaces" == path[1]
+    wsName := path[2]
+    wsName != ""
+}
+
+is_workspace_api_admin if {
     claims != null
     claims.resource_access != null
     claims.resource_access["workspace-api"] != null
     "admin" in claims.resource_access["workspace-api"].roles
 }
 
-allow if {
-    claims := verified_claims
+has_workspace_role(wsName, role) if {
     claims != null
     claims.resource_access != null
-    path := split(request.path, "/")
-    "" == path[0]
-    "workspaces" == path[1]
-    wsName := path[2]    
     claims.resource_access[wsName] != null
-    "ws_access" in claims.resource_access[wsName].roles
-#    print("[wsapi policy] Path: ", request.path, " -> ", path)
-#    print("[wsapi policy] Method: ", request.method)
-#    print("[wsapi policy] Claims: ", claims)
+    role in claims.resource_access[wsName].roles
+}
+
+allow if {
+    print("[wsapi policy] START1 workspace-api:admin")
+    print("[wsapi policy] Path: ", request.path)
+    print("[wsapi policy] Method: ", request.method)
+    is_workspace_api_admin
+}
+
+allow if {
+    print("[wsapi policy] START2 <ws-client>:ws_access")
+    print("[wsapi policy] Path: ", request.path)
+    print("[wsapi policy] Method: ", request.method)
+    wsName := workspace_name
+    print("[wsapi policy] Claims: ", claims)
+    has_workspace_role(wsName, "ws_access")
+}
+
+allow if {
+    print("[wsapi policy] START3 <ws-client>:ws_admin")
+    print("[wsapi policy] Path: ", request.path)
+    print("[wsapi policy] Method: ", request.method)
+    wsName := workspace_name
+    print("[wsapi policy] Claims: ", claims)
+    has_workspace_role(wsName, "ws_admin")
 }
