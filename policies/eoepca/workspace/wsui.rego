@@ -24,6 +24,17 @@
 #   }
 # }
 #
+# Also allowed for any workspace UI host:
+# {
+#   "azp": "workspace-api",
+#   "aud": ["workspace-api"],
+#   "resource_access": {
+#     "workspace-api": {
+#       "roles": ["admin"]
+#     }
+#   }
+# }
+#
 # Denied because ws_api is not sufficient:
 # {
 #   "azp": "workspace-api",
@@ -134,6 +145,15 @@ has_workspace_access(client) if {
 
 has_workspace_access(client) if {
     has_workspace_role(client, "ws_admin")
+}
+
+workspace_api_admin if {
+    has_workspace_role("workspace-api", "admin")
+}
+
+allow if {
+    workspace_api_token
+    workspace_api_admin
 }
 
 allow if {
