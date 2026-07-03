@@ -1,3 +1,5 @@
+# OBSOLETE - not used with eoepca-demo cluster anymore (Q2/2026)
+
 package eoepca.dataaccess.eoapi
 
 import rego.v1

@@ -1,15 +1,50 @@
-# Copyright 2024 Werum Software & Systems AG (Germany)
+# in use with eoepca-demo cluster anymore (Q2/2026)
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Example decoded access-token claims:
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# Allowed for https://ws-alice-default.lab.develop.eoepca.org:
+# {
+#   "azp": "workspace-api",
+#   "aud": ["workspace-api"],
+#   "resource_access": {
+#     "ws-alice": {
+#       "roles": ["ws_access"]
+#     }
+#   }
+# }
 #
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS"
-# BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and limitations under the License.
-
-# OPA Policy for Workspace UI Protection
+# Also allowed:
+# {
+#   "azp": "workspace-api",
+#   "aud": "workspace-api",
+#   "resource_access": {
+#     "ws-alice": {
+#       "roles": ["ws_admin"]
+#     }
+#   }
+# }
+#
+# Denied because ws_api is not sufficient:
+# {
+#   "azp": "workspace-api",
+#   "aud": ["workspace-api"],
+#   "resource_access": {
+#     "ws-alice": {
+#       "roles": ["ws_api"]
+#     }
+#   }
+# }
+#
+# Denied because the token was issued for the workspace client, not workspace-api:
+# {
+#   "azp": "ws-alice",
+#   "aud": ["workspace-api"],
+#   "resource_access": {
+#     "ws-alice": {
+#       "roles": ["ws_access"]
+#     }
+#   }
+# }
 
 package eoepca.workspace.wsui
 
@@ -29,33 +64,61 @@ host_label := label if {
 }
 
 workspace_client := client if {
-    claims != null
-    client := claims.azp
+    label := normalized_host_label
+    parts := split(label, "-default")
+    count(parts) > 1
+    client := parts[0]
     client != ""
-    host_matches_client(host_label, client)
+    claims.resource_access[client] != null
 }
 
-host_matches_client(host, client) if {
-    host == client
+normalized_host_label := label if {
+    label := trim_host_affixes(host_label)
 }
 
-host_matches_client(host, client) if {
-    startswith(host, concat("", [client, "-"]))
+trim_host_affixes(label) := trimmed if {
+    startswith(label, "editor-")
+    trimmed := trim_host_suffix(substring(label, count("editor-"), -1))
 }
 
-host_matches_client(host, client) if {
-    startswith(host, concat("", ["editor-", client, "-"]))
+trim_host_affixes(label) := trimmed if {
+    startswith(label, "data-")
+    trimmed := trim_host_suffix(substring(label, count("data-"), -1))
 }
 
-host_matches_client(host, client) if {
-    startswith(host, concat("", ["data-", client, "-"]))
+trim_host_affixes(label) := trimmed if {
+    not startswith(label, "editor-")
+    not startswith(label, "data-")
+    trimmed := trim_host_suffix(label)
 }
 
-is_workspace_api_admin if {
+trim_host_suffix(label) := trimmed if {
+    endswith(label, "-editor")
+    trimmed := substring(label, 0, count(label) - count("-editor"))
+}
+
+trim_host_suffix(label) := trimmed if {
+    endswith(label, "-data")
+    trimmed := substring(label, 0, count(label) - count("-data"))
+}
+
+trim_host_suffix(label) := label if {
+    not endswith(label, "-editor")
+    not endswith(label, "-data")
+}
+
+workspace_api_token if {
     claims != null
-    claims.resource_access != null
-    claims.resource_access["workspace-api"] != null
-    "admin" in claims.resource_access["workspace-api"].roles
+    claims.azp == "workspace-api"
+    audience_includes("workspace-api")
+}
+
+audience_includes(audience) if {
+    claims.aud == audience
+}
+
+audience_includes(audience) if {
+    audience in claims.aud
 }
 
 has_workspace_role(client, role) if {
@@ -65,26 +128,16 @@ has_workspace_role(client, role) if {
     role in claims.resource_access[client].roles
 }
 
-allow if {
-    print("[wsui policy] START1 workspace-api:admin")
-    print("[wsui policy] Host: ", request.host)
-    is_workspace_api_admin
-}
-
-allow if {
-    print("[wsui policy] START2 <ws-client>:ws_access")
-    print("[wsui policy] Host: ", request.host)
-    client := workspace_client
-    print("[wsui policy] Client: ", client)
-    print("[wsui policy] Claims: ", claims)
+has_workspace_access(client) if {
     has_workspace_role(client, "ws_access")
 }
 
-allow if {
-    print("[wsui policy] START3 <ws-client>:ws_admin")
-    print("[wsui policy] Host: ", request.host)
-    client := workspace_client
-    print("[wsui policy] Client: ", client)
-    print("[wsui policy] Claims: ", claims)
+has_workspace_access(client) if {
     has_workspace_role(client, "ws_admin")
+}
+
+allow if {
+    workspace_api_token
+    client := workspace_client
+    has_workspace_access(client)
 }
