@@ -15,14 +15,30 @@ package eoepca.iam.util
 
 import rego.v1
 
-# Makes available the JWKS of the EOEPCA realm in Keycloak (generic)
+# Makes available the JWKS of the EOEPCA realm in Keycloak (generic).
+#
+# "iam-keycloak" is the Bitnami Keycloak
+# "iam-core-keycloak-operator-service" (port 8080) is the Keycloak Operator's. 
+# NOTE: Once the RKE1 cluster is deprecated, this will be removed.
+
+keycloak_jwks_urls := [
+    "http://iam-keycloak/realms/eoepca/protocol/openid-connect/certs",
+    "http://iam-core-keycloak-operator-service:8080/realms/eoepca/protocol/openid-connect/certs",
+]
+
 jwks_request(url) := http.send({
     "url": url,
     "method": "GET",
     "force_cache": true,
-    "force_cache_duration_seconds": 3600 # Cache response for an hour
+    "force_cache_duration_seconds": 3600, # Cache response for an hour
+    "raise_error": false # try the next candidate instead of aborting evaluation
 })
-jwks := jwks_request("http://iam-keycloak/realms/eoepca/protocol/openid-connect/certs").raw_body
+
+jwks := response.raw_body if {
+    some url in keycloak_jwks_urls
+    response := jwks_request(url)
+    response.status_code == 200
+}
 
 # Claims from JWT if JWT is present and can be verified; null otherwise
 # This rule is only useful for policies that accept the APISIX OPA input format.
